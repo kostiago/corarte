@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(node verificar.js)",
+      "Read(//c/OneDrive/Documentos/tinta-e-pano/**)"
+    ]
+  }
+}

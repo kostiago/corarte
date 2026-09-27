@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Coleção — Corarte</title>
+<meta name="description" content="Todas as camisas pintadas à mão do ateliê Corarte, filtradas por motivo e tamanho." />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<svg class="textura" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <filter id="ruido">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+    <feColorMatrix type="saturate" values="0" />
+  </filter>
+  <rect width="100%" height="100%" filter="url(#ruido)" />
+</svg>
+
+<div id="cabecalho-app"></div>
+
+<nav class="trilha" aria-label="Você está aqui">
+  <a href="index.html">Início</a> <span aria-hidden="true">/</span> <span id="trilha-atual">Coleção</span>
+</nav>
+
+<section class="pagina-colecao">
+  <div class="pagina-colecao__corpo">
+
+    <aside class="filtros" aria-label="Filtrar peças">
+      <div class="filtros__topo">
+        <h2>Filtros</h2>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9M15 4v6M9 14v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+
+      <details class="filtros__grupo" open>
+        <summary>Categoria <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div id="filtros-categoria" class="filtros__lista"></div>
+      </details>
+
+      <details class="filtros__grupo" id="grupo-preco" open>
+        <summary>Preço <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="faixa" id="faixa-preco">
+          <div class="faixa__trilho"><div class="faixa__preenchimento" id="faixa-preenchimento"></div></div>
+          <input type="range" id="preco-min" aria-label="Preço mínimo" />
+          <input type="range" id="preco-max" aria-label="Preço máximo" />
+        </div>
+        <div class="faixa__valores"><span id="preco-min-txt"></span><span id="preco-max-txt"></span></div>
+      </details>
+
+      <details class="filtros__grupo" open>
+        <summary>Cores <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div id="filtros-cor" class="filtros__cores"></div>
+      </details>
+
+      <details class="filtros__grupo" open>
+        <summary>Tamanho <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div id="filtros-tamanho" class="filtros__pilulas"></div>
+      </details>
+
+      <button type="button" id="limpar-filtros" class="filtros__limpar">Limpar filtros</button>
+    </aside>
+
+    <div class="pagina-colecao__lista">
+      <div class="pagina-colecao__topo">
+        <h1 class="pagina-colecao__titulo" id="titulo-colecao">A coleção</h1>
+        <div class="pagina-colecao__meta">
+          <p id="contagem-produtos" class="pagina-colecao__contagem" aria-live="polite"></p>
+          <label class="pagina-colecao__ordenar">
+            Ordenar por:
+            <select id="ordenar">
+              <option value="novidades">Novidades</option>
+              <option value="menor-preco">Menor preço</option>
+              <option value="maior-preco">Maior preço</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="grade" id="grade-produtos" aria-live="polite"></div>
+    </div>
+
+  </div>
+</section>
+
+<div id="rodape-app"></div>
+
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script src="js/pagina-colecao.js"></script>
+</body>
+</html>

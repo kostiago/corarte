@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sua sacola — Corarte</title>
+<meta name="description" content="Revise as peças escolhidas, ajuste as quantidades e feche o pedido pelo WhatsApp." />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<svg class="textura" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <filter id="ruido">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+    <feColorMatrix type="saturate" values="0" />
+  </filter>
+  <rect width="100%" height="100%" filter="url(#ruido)" />
+</svg>
+
+<div id="cabecalho-app"></div>
+
+<nav class="trilha" aria-label="Você está aqui">
+  <a href="index.html">Início</a> <span aria-hidden="true">/</span> <span>Sacola</span>
+</nav>
+
+<section class="sacola">
+  <h1 class="sacola__titulo">Sua sacola</h1>
+  <div id="sacola-conteudo"></div>
+</section>
+
+<div id="rodape-app"></div>
+
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script src="js/pagina-carrinho.js"></script>
+</body>
+</html>

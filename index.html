@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Corarte camisas pintadas à mão</title>
+<meta name="description" content="Camisas personalizadas, pintadas à mão, uma a uma, com motivos inspirados na xilogravura nordestina." />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<svg class="textura" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <filter id="ruido">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+    <feColorMatrix type="saturate" values="0" />
+  </filter>
+  <rect width="100%" height="100%" filter="url(#ruido)" />
+</svg>
+
+<div id="cabecalho-app"></div>
+
+<section class="hero">
+  <div class="hero__conteudo">
+    <h1 class="hero__titulo">Uma camisa não sai igual à outra</h1>
+    <p class="hero__texto">
+      Cada peça é pintada à mão, em pincelada única, com motivos que vêm da
+      xilogravura do cotidiano nordestino — o sol do meio-dia, o galo de
+      quintal, a estrela de cordel. Você veste uma arte que não se repete.
+    </p>
+    <div class="hero__acoes">
+      <a href="colecao.html" class="botao">Ver a coleção</a>
+      <a href="#como-funciona" class="botao botao--fantasma">Como funciona</a>
+    </div>
+    <dl class="hero__stats">
+      <div class="hero__stat"><dt>8</dt><dd>motivos autorais</dd></div>
+      <div class="hero__stat"><dt>1</dt><dd>peça por pintura</dd></div>
+      <div class="hero__stat"><dt>100%</dt><dd>pintado à mão</dd></div>
+    </dl>
+  </div>
+  <svg class="hero__brilho hero__brilho--grande" viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M50 0C54 30 70 46 100 50C70 54 54 70 50 100C46 70 30 54 0 50C30 46 46 30 50 0Z" fill="currentColor"/>
+  </svg>
+  <svg class="hero__brilho hero__brilho--pequeno" viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M50 0C54 30 70 46 100 50C70 54 54 70 50 100C46 70 30 54 0 50C30 46 46 30 50 0Z" fill="currentColor"/>
+  </svg>
+</section>
+
+<nav class="tarja-categorias" aria-label="Categorias" id="tarja-categorias"></nav>
+
+<section class="banner-secao" aria-labelledby="banner-titulo">
+  <div class="banner">
+    <div class="banner__conteudo">
+      <p class="banner__eyebrow">Personalize</p>
+      <h2 class="banner__titulo" id="banner-titulo">Sua arte na sua camisa</h2>
+      <p class="banner__texto">
+        Envie uma ou mais artes, escolha o modelo, a cor e onde a estampa vai — o ateliê
+        pinta à mão do seu jeito.
+      </p>
+      <a class="botao banner__botao" href="customizar.html">Personalizar agora</a>
+    </div>
+
+    <div class="banner__foto">
+      <img src="imgs/sol-do-sertao.jpeg" alt="Camisa branca pintada à mão com paisagem do sertão" loading="lazy" />
+    </div>
+
+    <div class="banner__frase" aria-hidden="true">
+      <span>Sua arte,</span>
+      <span>vestida.</span>
+      <svg viewBox="0 0 120 20"><path d="M4 12 C 16 2, 24 2, 34 11 S 54 20, 66 10 S 90 2, 100 11 S 112 16, 116 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+    </div>
+  </div>
+</section>
+
+<section class="vitrine" id="recem-pintadas">
+  <div class="vitrine__cabecalho">
+    <h2>Recém-pintadas</h2>
+  </div>
+  <div class="grade" id="grade-recentes"></div>
+  <div class="vitrine__rodape">
+    <a class="botao botao--fantasma vitrine__ver-tudo" href="colecao.html">Ver toda a coleção</a>
+  </div>
+</section>
+
+<section class="vitrine vitrine--alterna" id="destaques">
+  <div class="vitrine__cabecalho">
+    <h2>Peças em destaque</h2>
+  </div>
+  <div class="grade" id="grade-destaques"></div>
+  <div class="vitrine__rodape">
+    <a class="botao botao--fantasma vitrine__ver-tudo" href="colecao.html">Ver toda a coleção</a>
+  </div>
+</section>
+
+<section class="motivos" id="motivos">
+  <h2 class="motivos__titulo">Explore por motivo</h2>
+  <div class="motivos__grade" id="motivos-grade"></div>
+</section>
+
+<section class="passos" id="como-funciona">
+  <h2 class="passos__titulo">Como funciona a encomenda</h2>
+  <ol class="passos__lista">
+    <li class="passo">
+      <span class="passo__numero">1</span>
+      <h3>Escolha uma arte</h3>
+      <p>Cada pintura tem tiragem limitada — quando as peças acabam, o motivo vira lembrança e dá lugar a um novo desenho.</p>
+    </li>
+    <li class="passo">
+      <span class="passo__numero">2</span>
+      <h3>Combine pelo WhatsApp</h3>
+      <p>Tamanho, prazo de pintura e ajustes são acertados direto com o ateliê, sem loja automática no meio.</p>
+    </li>
+    <li class="passo">
+      <span class="passo__numero">3</span>
+      <h3>Receba sua peça única</h3>
+      <p>Pintada à mão, uma pincelada por vez — a camisa que chega até você não tem outra igual.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="sobre" id="sobre">
+  <h2 class="sobre__titulo">Do risco ao pincel</h2>
+  <div class="sobre__texto">
+    <p>
+      O Corarte nasceu de um caderno de desenhos e da vontade de vestir
+      histórias do Nordeste em vez de estampar imagens prontas. Cada camisa
+      começa com um esboço a lápis, inspirado nos cordéis, na xilogravura de
+      feira e nas cenas simples do dia a dia — daí vira traço, vira tinta,
+      vira peça de vestir.
+    </p>
+    <p>
+      Como o trabalho é manual, cada arte tem um número limitado de peças.
+      Quando elas acabam, viram lembrança e dão lugar a um novo desenho.
+    </p>
+  </div>
+</section>
+
+<div id="rodape-app"></div>
+
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script src="js/pagina-inicio.js"></script>
+</body>
+</html>

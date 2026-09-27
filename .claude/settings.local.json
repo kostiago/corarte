@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/tiago/AppData/Local/Temp/claude/c--Users-tiago-OneDrive-Documentos-tinta-e-pano/4dfe75f9-0d47-4e46-abc5-a93272e8a38f/scratchpad/**)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

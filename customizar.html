@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Personalize sua camisa — Corarte</title>
+<meta name="description" content="Monte sua camisa: escolha o modelo, a cor, envie sua arte e posicione a estampa na frente ou nas costas." />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<svg class="textura" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <filter id="ruido">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+    <feColorMatrix type="saturate" values="0" />
+  </filter>
+  <rect width="100%" height="100%" filter="url(#ruido)" />
+</svg>
+
+<div id="cabecalho-app"></div>
+
+<nav class="trilha" aria-label="Você está aqui">
+  <a href="index.html">Início</a> <span aria-hidden="true">/</span> <span>Personalizar</span>
+</nav>
+
+<section class="custom">
+
+  <!-- ===== prévia da camisa ===== -->
+  <div class="custom__palco">
+    <div class="custom__lados" role="group" aria-label="Lado da camisa">
+      <button type="button" class="filtro" id="lado-frente" aria-pressed="true">Frente</button>
+      <button type="button" class="filtro" id="lado-costas" aria-pressed="false">Costas</button>
+      <label class="custom__guia-check">
+        <input type="checkbox" id="mostrar-guia" checked /> Mostrar área de estampa
+      </label>
+    </div>
+
+    <div class="custom__stage">
+      <svg id="palco-svg" viewBox="0 0 400 460" role="img" aria-label="Prévia da camisa" tabindex="0">
+        <defs>
+          <clipPath id="clip-estampa"><rect id="clip-rect" x="0" y="0" width="0" height="0" /></clipPath>
+        </defs>
+        <path id="camisa-corpo" class="camisa__corpo" />
+        <g id="camisa-detalhes" class="camisa__detalhes"></g>
+        <g id="camisa-artes" clip-path="url(#clip-estampa)"></g>
+        <rect id="camisa-guia" class="camisa__guia" fill="none" />
+        <g id="camisa-selecao"></g>
+      </svg>
+    </div>
+    <p class="custom__dica" id="dica-palco">
+      Envie uma arte no passo 4 e arraste sobre a camisa para posicionar. Setas do teclado
+      movem, Delete remove.
+    </p>
+  </div>
+
+  <!-- ===== painel de opções ===== -->
+  <div class="custom__painel">
+    <h1 class="custom__titulo">Personalize sua camisa</h1>
+    <p class="custom__intro">
+      Monte a camisa do seu jeito e mande o pedido pelo WhatsApp. A pintura é feita à mão pelo
+      ateliê a partir da sua arte — o valor e o prazo são combinados na conversa.
+    </p>
+
+    <fieldset class="custom__passo">
+      <legend><span class="passo-num">1</span> Modelo</legend>
+      <div class="opcao-cartoes" id="opcoes-modelo"></div>
+    </fieldset>
+
+    <fieldset class="custom__passo">
+      <legend><span class="passo-num">2</span> Cor da camisa: <strong id="cor-nome"></strong></legend>
+      <div class="produto__lista-cores" id="opcoes-cor"></div>
+    </fieldset>
+
+    <fieldset class="custom__passo">
+      <legend><span class="passo-num">3</span> Tamanho</legend>
+      <div class="produto__lista-tamanhos" id="opcoes-tamanho"></div>
+    </fieldset>
+
+    <fieldset class="custom__passo">
+      <legend><span class="passo-num">4</span> Suas artes</legend>
+
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="arquivo-arte" accept="image/png,image/jpeg,image/webp,image/svg+xml" multiple />
+        <strong>Clique ou arraste as artes aqui</strong>
+        <span>PNG com fundo transparente fica melhor · JPG, WebP ou SVG · até 10 MB cada · máx. 8 artes</span>
+      </label>
+      <p class="custom__status" id="upload-status" role="status" aria-live="polite"></p>
+      <p class="custom__aviso">
+        Ao enviar, você confirma que a arte é sua ou que tem autorização para estampá-la. As imagens
+        ficam só no seu navegador — nada é enviado para o site.
+      </p>
+
+      <ul class="artes-lista" id="artes-lista"></ul>
+
+      <div class="arte-controles" id="arte-controles" hidden>
+        <h3 class="arte-controles__titulo">Arte selecionada</h3>
+
+        <label class="controle-range">
+          <span>Tamanho</span>
+          <input type="range" id="arte-tamanho" min="20" max="320" step="1" />
+        </label>
+        <label class="controle-range">
+          <span>Rotação</span>
+          <input type="range" id="arte-rotacao" min="-180" max="180" step="1" />
+        </label>
+
+        <span class="produto__rotulo">Posição rápida</span>
+        <div class="presets" id="presets"></div>
+
+        <div class="arte-acoes">
+          <button type="button" class="filtro" id="arte-centralizar">Centralizar</button>
+          <button type="button" class="filtro" id="arte-duplicar">Duplicar</button>
+          <button type="button" class="filtro" id="arte-lado">Enviar para as costas</button>
+          <button type="button" class="filtro filtro--perigo" id="arte-remover">Remover</button>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="custom__passo">
+      <legend><span class="passo-num">5</span> Observações</legend>
+      <textarea id="observacoes" class="custom__obs" rows="3" maxlength="500"
+        placeholder="Ex.: pintar em preto, prazo para o dia 20, tamanho da arte no peito…"></textarea>
+    </fieldset>
+
+    <div class="custom__resumo">
+      <h2 class="custom__resumo-titulo">Resumo do pedido</h2>
+      <dl class="resumo-lista" id="resumo"></dl>
+      <a class="botao botao--whatsapp" id="enviar-whatsapp" href="#" target="_blank" rel="noopener">Enviar pedido pelo WhatsApp</a>
+      <button type="button" class="botao botao--fantasma custom__baixar" id="baixar-previa">Baixar prévia (PNG)</button>
+      <p class="custom__status" id="acao-status" role="status" aria-live="polite"></p>
+      <p class="custom__aviso">
+        O link do WhatsApp não anexa imagens: baixe a prévia e mande junto com os arquivos das
+        artes na conversa.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div id="rodape-app"></div>
+
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/pagina-customizar.js"></script>
+</body>
+</html>

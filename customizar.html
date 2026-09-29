@@ -6,6 +6,9 @@
 <title>Personalize sua camisa — Corarte</title>
 <meta name="description" content="Monte sua camisa: escolha o modelo, a cor, envie sua arte e posicione a estampa na frente ou nas costas." />
 <link rel="stylesheet" href="css/style.css" />
+<!-- Prévia 3D da camisa. Precisa de servidor HTTP (não abre com file://) e
+     usa o CDN pro componente e pro descompactador Draco. -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.3.1/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
@@ -27,6 +30,8 @@
 
   <!-- ===== prévia da camisa ===== -->
   <div class="custom__palco">
+
+    <h2 class="custom__editor-titulo">Posicionar a arte</h2>
     <div class="custom__lados" role="group" aria-label="Lado da camisa">
       <button type="button" class="filtro" id="lado-frente" aria-pressed="true">Frente</button>
       <button type="button" class="filtro" id="lado-costas" aria-pressed="false">Costas</button>
@@ -35,22 +40,64 @@
       </label>
     </div>
 
-    <div class="custom__stage">
-      <svg id="palco-svg" viewBox="0 0 400 460" role="img" aria-label="Prévia da camisa" tabindex="0">
-        <defs>
-          <clipPath id="clip-estampa"><rect id="clip-rect" x="0" y="0" width="0" height="0" /></clipPath>
-        </defs>
-        <path id="camisa-corpo" class="camisa__corpo" />
-        <g id="camisa-detalhes" class="camisa__detalhes"></g>
-        <g id="camisa-artes" clip-path="url(#clip-estampa)"></g>
-        <rect id="camisa-guia" class="camisa__guia" fill="none" />
-        <g id="camisa-selecao"></g>
-      </svg>
+    <!-- Prévia 3D (mostra ao vivo o que está montado no editor 2D ao lado)
+         e o editor 2D (onde a arte é de fato posicionada) lado a lado. -->
+    <div class="custom__area-dupla">
+
+      <div class="custom__coluna-3d">
+        <div class="custom__visualizador-3d" id="custom-visualizador-3d">
+          <span class="custom__selo-3d">3D · arraste para girar</span>
+          <model-viewer
+            id="camisa-3d"
+            class="custom__model"
+            src="modelos/camiseta-normal.glb"
+            alt="Prévia em 3D da camisa personalizada"
+            camera-controls
+            touch-action="pan-y"
+            auto-rotate
+            rotation-per-second="18deg"
+            auto-rotate-delay="2500"
+            camera-orbit="-18deg 80deg auto"
+            min-camera-orbit="auto 40deg auto"
+            max-camera-orbit="auto 120deg auto"
+            field-of-view="28deg"
+            shadow-intensity="1.1"
+            shadow-softness="0.9"
+            exposure="1.05"
+            environment-image="neutral"
+            interaction-prompt="none"
+          ></model-viewer>
+          <p class="custom__3d-indisponivel" id="aviso-3d-indisponivel" hidden>
+            A prévia em 3D não está disponível agora pra esse caimento (ou pra esse navegador) —
+            use o editor ao lado pra posicionar a arte, ele já mostra exatamente onde ela vai ficar.
+          </p>
+        </div>
+        <div class="custom__controles-3d">
+          <button type="button" class="filtro" id="girar-sozinho" aria-pressed="true">Girar sozinho</button>
+        </div>
+      </div>
+
+      <div class="custom__coluna-2d">
+        <div class="custom__stage">
+          <svg id="palco-svg" viewBox="0 0 400 460" role="img" aria-label="Prévia da camisa" tabindex="0">
+            <defs>
+              <clipPath id="clip-estampa"><rect id="clip-rect" x="0" y="0" width="0" height="0" /></clipPath>
+            </defs>
+            <path id="camisa-corpo" class="camisa__corpo" />
+            <g id="camisa-detalhes" class="camisa__detalhes"></g>
+            <g id="camisa-artes" clip-path="url(#clip-estampa)"></g>
+            <rect id="camisa-guia" class="camisa__guia" fill="none" />
+            <g id="camisa-selecao"></g>
+          </svg>
+        </div>
+        <p class="custom__dica" id="dica-palco">
+          Envie uma arte no passo 4 e arraste sobre a camisa para posicionar. Use as alças nos
+          cantos para redimensionar, a de cima para girar e a de baixo para espelhar. Setas do
+          teclado movem, Delete remove.
+        </p>
+      </div>
+
     </div>
-    <p class="custom__dica" id="dica-palco">
-      Envie uma arte no passo 4 e arraste sobre a camisa para posicionar. Setas do teclado
-      movem, Delete remove.
-    </p>
   </div>
 
   <!-- ===== painel de opções ===== -->
@@ -140,6 +187,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/layout.js"></script>
+<script type="module" src="js/camisa-3d.js"></script>
 <script src="js/pagina-customizar.js"></script>
 </body>
 </html>

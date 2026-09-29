@@ -49,19 +49,21 @@ const MODELOS = {
 
 // Posições rápidas (frações da área de estampa). fx/fy = centro da arte,
 // fw = largura. No lado "frente", o peito esquerdo de quem veste fica do
-// lado direito de quem olha.
+// lado direito de quem olha. "cm" é o tamanho aproximado da estampa
+// impressa nessa posição — valores de exemplo (tabela padrão de
+// estamparia), ajuste para as medidas reais que o ateliê usa.
 const PRESETS = {
   frente: [
-    { nome: "Peito esquerdo", fx: 0.74, fy: 0.1, fw: 0.28 },
-    { nome: "Centro", fx: 0.5, fy: 0.3, fw: 0.62 },
-    { nome: "Grande", fx: 0.5, fy: 0.42, fw: 0.92 },
-    { nome: "Barra", fx: 0.5, fy: 0.86, fw: 0.6 },
+    { nome: "Peito esquerdo", fx: 0.74, fy: 0.1, fw: 0.28, cm: "10×10 cm" },
+    { nome: "Centro", fx: 0.5, fy: 0.3, fw: 0.62, cm: "23×23 cm" },
+    { nome: "Grande", fx: 0.5, fy: 0.42, fw: 0.92, cm: "30×35 cm" },
+    { nome: "Barra", fx: 0.5, fy: 0.86, fw: 0.6, cm: "27×7 cm" },
   ],
   costas: [
-    { nome: "Nuca", fx: 0.5, fy: 0.07, fw: 0.28 },
-    { nome: "Centro", fx: 0.5, fy: 0.3, fw: 0.62 },
-    { nome: "Grande", fx: 0.5, fy: 0.42, fw: 0.92 },
-    { nome: "Barra", fx: 0.5, fy: 0.86, fw: 0.6 },
+    { nome: "Nuca", fx: 0.5, fy: 0.07, fw: 0.28, cm: "12×12 cm" },
+    { nome: "Centro", fx: 0.5, fy: 0.3, fw: 0.62, cm: "23×23 cm" },
+    { nome: "Grande", fx: 0.5, fy: 0.42, fw: 0.92, cm: "30×35 cm" },
+    { nome: "Barra", fx: 0.5, fy: 0.86, fw: 0.6, cm: "27×7 cm" },
   ],
 };
 
@@ -77,6 +79,8 @@ const estado = {
 
 let proximoId = 1;
 let arrastando = null;
+let redimensionando = null;
+let rotacionando = null;
 
 const $ = (id) => document.getElementById(id);
 const area = () => MODELOS[estado.modelo].area;
@@ -113,6 +117,7 @@ function desenharCamisa() {
     el.setAttribute("height", a.h);
   }
   $("camisa-guia").style.display = estado.guia ? "" : "none";
+  agendarAtualizacao3D();
 }
 
 function alturaDaArte(a) {
@@ -126,10 +131,14 @@ function aplicarTransform(a) {
   a.imgEl.setAttribute("y", -h / 2);
   a.imgEl.setAttribute("width", a.largura);
   a.imgEl.setAttribute("height", h);
-  a.el.setAttribute("transform", `translate(${a.cx} ${a.cy}) rotate(${a.rotacao})`);
+  a.el.setAttribute("transform", `translate(${a.cx} ${a.cy}) rotate(${a.rotacao}) scale(${a.espelho ? -1 : 1} 1)`);
   if (a.id === estado.selecionada) atualizarSelecao();
+  agendarAtualizacao3D();
 }
 
+// Alças diretamente sobre a arte selecionada, como no recorte de
+// imagem de referência: 4 cantos redimensionam (mantendo a proporção),
+// o círculo de cima gira, o de baixo espelha.
 function atualizarSelecao() {
   const alvo = $("camisa-selecao");
   const a = arteAtual();
@@ -138,7 +147,42 @@ function atualizarSelecao() {
     return;
   }
   const h = alturaDaArte(a);
-  alvo.innerHTML = `<rect class="camisa__selecao" x="${-a.largura / 2}" y="${-h / 2}" width="${a.largura}" height="${h}" transform="translate(${a.cx} ${a.cy}) rotate(${a.rotacao})"/>`;
+  const meiaL = a.largura / 2;
+  const meiaH = h / 2;
+  const r = 7;
+  const distRot = 24;
+  const cantos = [
+    ["nw", -meiaL, -meiaH],
+    ["ne", meiaL, -meiaH],
+    ["se", meiaL, meiaH],
+    ["sw", -meiaL, meiaH],
+  ];
+  alvo.innerHTML = `
+    <g transform="translate(${a.cx} ${a.cy}) rotate(${a.rotacao}) scale(${a.espelho ? -1 : 1} 1)">
+      <rect class="camisa__selecao" x="${-meiaL}" y="${-meiaH}" width="${a.largura}" height="${h}" />
+      <line class="camisa__alca-linha" x1="0" y1="${-meiaH}" x2="0" y2="${-meiaH - distRot}" />
+      <circle class="camisa__alca camisa__alca--rotacao" data-handle="rotacionar" cx="0" cy="${-meiaH - distRot}" r="${r}" />
+      ${cantos
+        .map(([c, x, y]) => `<rect class="camisa__alca camisa__alca--redimensionar" data-handle="redimensionar" x="${x - r}" y="${y - r}" width="${r * 2}" height="${r * 2}" data-canto="${c}"/>`)
+        .join("")}
+      <g class="camisa__alca camisa__alca--espelhar" data-handle="espelhar" transform="translate(0 ${meiaH + distRot * 0.85})">
+        <circle r="${r}" fill="var(--papel)" stroke="var(--tinta)" stroke-width="1.5" />
+        <path class="camisa__alca-icone" d="M-3,-3.5 L1,0 L-3,3.5 M3,-3.5 L-1,0 L3,3.5" />
+      </g>
+    </g>`;
+}
+
+function sincronizarControlesArte(a) {
+  $("arte-tamanho").value = Math.round(a.largura);
+  $("arte-rotacao").value = Math.round(a.rotacao);
+}
+
+function anguloEntre(cx, cy, px, py) {
+  return (Math.atan2(py - cy, px - cx) * 180) / Math.PI;
+}
+
+function normalizarAngulo(deg) {
+  return (((deg + 180) % 360) + 360) % 360 - 180;
 }
 
 // Recria os elementos <image> das artes do lado atual (só quando a lista
@@ -164,6 +208,7 @@ function sincronizarArtes() {
     aplicarTransform(a);
   });
   atualizarSelecao();
+  agendarAtualizacao3D();
 }
 
 // ---------- opções (modelo / cor / tamanho / lado) ----------
@@ -249,6 +294,14 @@ function trocarLado(lado) {
   desenharCamisa();
   sincronizarArtes();
   atualizarPainel();
+
+  // acompanha no 3D: gira a câmera pro lado que a pessoa passou a editar
+  const mv = $("camisa-3d");
+  if (mv && !mv.hidden) {
+    mv.cameraOrbit = lado === "frente" ? "0deg 80deg auto" : "180deg 80deg auto";
+    mv.autoRotate = false;
+    $("girar-sozinho")?.setAttribute("aria-pressed", "false");
+  }
 }
 
 function ligarLados() {
@@ -314,6 +367,7 @@ function novaArte({ nome, src, proporcao }) {
     cy: a.y + a.h * 0.3 + n * 10,
     largura,
     rotacao: 0,
+    espelho: false,
   };
 }
 
@@ -401,6 +455,24 @@ function ligarPalco() {
   const svg = $("palco-svg");
 
   svg.addEventListener("pointerdown", (e) => {
+    const alca = e.target.closest && e.target.closest("[data-handle]");
+    if (alca) {
+      const a = arteAtual();
+      if (!a) return;
+      const tipo = alca.dataset.handle;
+      if (tipo === "espelhar") {
+        a.espelho = !a.espelho;
+        aplicarTransform(a);
+        e.preventDefault();
+        return;
+      }
+      svg.setPointerCapture(e.pointerId);
+      if (tipo === "rotacionar") rotacionando = { id: a.id };
+      else if (tipo === "redimensionar") redimensionando = { id: a.id };
+      e.preventDefault();
+      return;
+    }
+
     const alvo = e.target.closest && e.target.closest("[data-id]");
     if (!alvo) {
       selecionar(null);
@@ -416,6 +488,29 @@ function ligarPalco() {
   });
 
   svg.addEventListener("pointermove", (e) => {
+    if (rotacionando) {
+      const a = estado.artes.find((x) => x.id === rotacionando.id);
+      if (!a) return;
+      const p = pontoNoSvg(e);
+      a.rotacao = normalizarAngulo(anguloEntre(a.cx, a.cy, p.x, p.y) + 90);
+      aplicarTransform(a);
+      sincronizarControlesArte(a);
+      return;
+    }
+    if (redimensionando) {
+      const a = estado.artes.find((x) => x.id === redimensionando.id);
+      if (!a) return;
+      const p = pontoNoSvg(e);
+      const rad = (-a.rotacao * Math.PI) / 180;
+      const dx = p.x - a.cx;
+      const dy = p.y - a.cy;
+      const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+      const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
+      a.largura = Math.max(20, Math.min(320, 2 * Math.max(Math.abs(lx), Math.abs(ly) / a.proporcao)));
+      aplicarTransform(a);
+      sincronizarControlesArte(a);
+      return;
+    }
     if (!arrastando) return;
     const a = estado.artes.find((x) => x.id === arrastando.id);
     const p = pontoNoSvg(e);
@@ -426,6 +521,8 @@ function ligarPalco() {
 
   const soltar = () => {
     arrastando = null;
+    rotacionando = null;
+    redimensionando = null;
   };
   svg.addEventListener("pointerup", soltar);
   svg.addEventListener("pointercancel", soltar);
@@ -448,6 +545,25 @@ function ligarPalco() {
 }
 
 // ---------- controles da arte selecionada ----------
+
+// A ordem de "estado.artes" é a ordem de empilhamento na camisa (quem vem
+// depois no array é desenhado por cima) — troca a posição da arte com a
+// da vizinha do MESMO lado, uma casa pra frente (direcao 1) ou pra trás
+// (direcao -1).
+function moverCamada(id, direcao) {
+  const a = estado.artes.find((x) => x.id === id);
+  if (!a) return;
+  const doLado = artesDoLado(a.lado);
+  const posLocal = doLado.findIndex((x) => x.id === id);
+  const alvoLocal = posLocal + direcao;
+  if (alvoLocal < 0 || alvoLocal >= doLado.length) return;
+  const outro = doLado[alvoLocal];
+  const iA = estado.artes.indexOf(a);
+  const iB = estado.artes.indexOf(outro);
+  [estado.artes[iA], estado.artes[iB]] = [estado.artes[iB], estado.artes[iA]];
+  sincronizarArtes();
+  atualizarPainel();
+}
 
 function removerArte(id) {
   estado.artes = estado.artes.filter((a) => a.id !== id);
@@ -510,6 +626,11 @@ function ligarControlesArte() {
     if (btn) aplicarPreset(PRESETS[estado.lado][Number(btn.dataset.preset)]);
   });
   $("artes-lista").addEventListener("click", (e) => {
+    const camada = e.target.closest("[data-camada]");
+    if (camada) {
+      moverCamada(Number(camada.dataset.arteId), camada.dataset.camada === "frente" ? 1 : -1);
+      return;
+    }
     const remover = e.target.closest("[data-remover]");
     if (remover) {
       removerArte(Number(remover.dataset.remover));
@@ -565,17 +686,30 @@ function atualizarPainel() {
   $("lado-frente").setAttribute("aria-pressed", String(estado.lado === "frente"));
   $("lado-costas").setAttribute("aria-pressed", String(estado.lado === "costas"));
 
-  // lista de artes
+  // lista de artes — quando duas ou mais dividem o mesmo lado, mostra a
+  // camada (quem fica na frente de quem) e alças pra reordenar.
   $("artes-lista").innerHTML = estado.artes
-    .map(
-      (a) => `
+    .map((a) => {
+      const doLado = artesDoLado(a.lado);
+      const pos = doLado.findIndex((x) => x.id === a.id);
+      const total = doLado.length;
+      const camadaInfo = total > 1 ? ` · camada ${pos + 1}/${total}` : "";
+      const camadas =
+        total > 1
+          ? `<span class="arte-item__camadas" role="group" aria-label="Ordem de sobreposição">
+              <button type="button" class="arte-item__camada" data-camada="frente" data-arte-id="${a.id}" title="Trazer para frente" aria-label="Trazer ${escaparHTML(a.nome)} para frente"${pos < total - 1 ? "" : " disabled"}>▲</button>
+              <button type="button" class="arte-item__camada" data-camada="tras" data-arte-id="${a.id}" title="Enviar para trás" aria-label="Enviar ${escaparHTML(a.nome)} para trás"${pos > 0 ? "" : " disabled"}>▼</button>
+            </span>`
+          : "";
+      return `
       <li class="arte-item${a.id === estado.selecionada ? " arte-item--sel" : ""}" data-arte="${a.id}">
         <img src="${a.src}" alt="" />
         <span class="arte-item__nome">${escaparHTML(a.nome)}</span>
-        <span class="arte-item__lado">${LADOS[a.lado]}</span>
+        <span class="arte-item__lado">${LADOS[a.lado]}${camadaInfo}</span>
+        ${camadas}
         <button type="button" class="arte-item__remover" data-remover="${a.id}" aria-label="Remover ${escaparHTML(a.nome)}">×</button>
-      </li>`
-    )
+      </li>`;
+    })
     .join("");
 
   // controles da arte selecionada
@@ -585,7 +719,10 @@ function atualizarPainel() {
     $("arte-tamanho").value = Math.round(a.largura);
     $("arte-rotacao").value = Math.round(a.rotacao);
     $("presets").innerHTML = PRESETS[a.lado]
-      .map((p, i) => `<button type="button" class="filtro" data-preset="${i}">${p.nome}</button>`)
+      .map(
+        (p, i) =>
+          `<button type="button" class="filtro preset-botao" data-preset="${i}">${p.nome}<span class="preset-botao__cm">${p.cm}</span></button>`
+      )
       .join("");
     $("arte-lado").textContent = a.lado === "frente" ? "Enviar para as costas" : "Enviar para a frente";
   }
@@ -609,7 +746,7 @@ function svgDoLado(lado) {
   const artes = artesDoLado(lado)
     .map((a) => {
       const h = alturaDaArte(a);
-      return `<g transform="translate(${a.cx} ${a.cy}) rotate(${a.rotacao})"><image href="${a.src}" xlink:href="${a.src}" x="${-a.largura / 2}" y="${-h / 2}" width="${a.largura}" height="${h}" preserveAspectRatio="none"/></g>`;
+      return `<g transform="translate(${a.cx} ${a.cy}) rotate(${a.rotacao}) scale(${a.espelho ? -1 : 1} 1)"><image href="${a.src}" xlink:href="${a.src}" x="${-a.largura / 2}" y="${-h / 2}" width="${a.largura}" height="${h}" preserveAspectRatio="none"/></g>`;
     })
     .join("");
   const traco = corDoTraco(estado.cor.hex);
@@ -650,6 +787,100 @@ async function gerarPrevia() {
   );
 }
 
+// ---------- prévia em 3D ----------
+// Ao vivo: cada mudança no editor 2D (mover/girar arte, trocar cor,
+// modelo ou lado) agenda uma atualização da textura 3D, com um pequeno
+// atraso (debounce) pra não recriar a textura a cada pixel arrastado —
+// só quando a pessoa pausa por um instante.
+
+let atualizacao3DPendente = null;
+
+function agendarAtualizacao3D() {
+  clearTimeout(atualizacao3DPendente);
+  atualizacao3DPendente = setTimeout(atualizarVisualizador3D, 150);
+}
+
+function suportaWebGL() {
+  try {
+    const c = document.createElement("canvas");
+    return !!(window.WebGLRenderingContext && (c.getContext("webgl") || c.getContext("experimental-webgl")));
+  } catch {
+    return false;
+  }
+}
+
+// Serializa só a camada de artes de um lado (recortada na área de
+// estampa, fundo transparente) como uma imagem independente — é isso que
+// vira a textura colada no painel correspondente do modelo 3D. Se o lado
+// não tem nenhuma arte, retorna null (o painel fica só na cor do tecido).
+function svgDaAreaImpressa(lado) {
+  const pecas = artesDoLado(lado);
+  if (pecas.length === 0) return null;
+  const a = area();
+  const artes = pecas
+    .map((art) => {
+      const h = alturaDaArte(art);
+      return `<g transform="translate(${art.cx} ${art.cy}) rotate(${art.rotacao}) scale(${art.espelho ? -1 : 1} 1)"><image href="${art.src}" x="${-art.largura / 2}" y="${-h / 2}" width="${art.largura}" height="${h}" preserveAspectRatio="none"/></g>`;
+    })
+    .join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${a.x} ${a.y} ${a.w} ${a.h}" width="${Math.round(a.w * 3)}" height="${Math.round(a.h * 3)}">${artes}</svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function mostrarAvisoIndisponivel3D(mostrar) {
+  const mv = $("camisa-3d");
+  const selo = document.querySelector(".custom__selo-3d");
+  const controles = document.querySelector(".custom__controles-3d");
+  const aviso = $("aviso-3d-indisponivel");
+  if (mv) mv.hidden = mostrar;
+  if (selo) selo.hidden = mostrar;
+  if (controles) controles.hidden = mostrar;
+  if (aviso) aviso.hidden = !mostrar;
+}
+
+async function atualizarVisualizador3D() {
+  const mv = $("camisa-3d");
+  if (!mv) return;
+
+  if (!window.Camisa3D || !suportaWebGL() || !window.Camisa3D.caimentoDisponivel(estado.modelo)) {
+    mostrarAvisoIndisponivel3D(true);
+    return;
+  }
+  mostrarAvisoIndisponivel3D(false);
+
+  try {
+    await window.Camisa3D.mostrarCamisa(mv, {
+      corTecido: estado.cor.hex,
+      caimento: estado.modelo,
+      frenteURL: svgDaAreaImpressa("frente"),
+      costasURL: svgDaAreaImpressa("costas"),
+    });
+  } catch (e) {
+    console.error(e);
+    mostrarAvisoIndisponivel3D(true);
+  }
+}
+
+function ligarVisualizador3D() {
+  const mv = $("camisa-3d");
+  if (!mv) return;
+
+  mv.addEventListener("error", () => mostrarAvisoIndisponivel3D(true));
+
+  const reduzMovimento = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  if (reduzMovimento) {
+    mv.removeAttribute("auto-rotate");
+    mv.autoRotate = false;
+  }
+
+  const botaoGirar = $("girar-sozinho");
+  botaoGirar.setAttribute("aria-pressed", String(!reduzMovimento));
+  botaoGirar.addEventListener("click", () => {
+    mv.autoRotate = !mv.autoRotate;
+    botaoGirar.setAttribute("aria-pressed", String(mv.autoRotate));
+  });
+}
+
 function ligarAcoes() {
   $("observacoes").addEventListener("input", atualizarPainel);
   $("baixar-previa").addEventListener("click", async () => {
@@ -682,6 +913,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ligarPalco();
   ligarControlesArte();
   ligarAcoes();
+  ligarVisualizador3D();
   desenharCamisa();
   atualizarPainel();
 });

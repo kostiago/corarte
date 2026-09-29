@@ -35,6 +35,15 @@
   box-sizing: border-box;
 }
 
+/* Garante que o atributo "hidden" sempre esconda o elemento, mesmo quando
+   alguma regra abaixo define "display" pra esse mesmo elemento sem
+   condicionar a [hidden] — sem isso, um "display: flex" (ou grid, etc.)
+   do autor vence o "display: none" padrão do navegador para [hidden],
+   porque os dois têm a mesma especificidade e o do autor vem depois. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -2153,6 +2162,109 @@ img, svg {
   top: 1.5rem;
 }
 
+/* Painel de opções (direita) rola por conta própria, sem levar a página
+   inteira junto — a prévia ao lado fica parada, só o painel desliza. */
+.custom__painel {
+  position: sticky;
+  top: 1.5rem;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  padding-right: 0.6rem;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tinta) transparent;
+}
+
+.custom__painel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom__painel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom__painel::-webkit-scrollbar-thumb {
+  background: var(--tinta);
+  border-radius: 999px;
+}
+
+/* Prévia 3D (userInput) e editor 2D (custom-stage) lado a lado — cada um
+   encolhe (flex-wrap) e empilha se o espaço disponível não comportar os
+   dois com uma largura mínima confortável. */
+.custom__area-dupla {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  align-items: flex-start;
+}
+
+/* Basis pequeno (pra continuar lado a lado mesmo quando a custom-area-dupla
+   não é larga o bastante pra caber os dois no tamanho máximo) + a maior
+   parte do crescimento indo pro 3D — mas os tetos abaixo são propositalmente
+   comedidos, pra não crescer agressivo demais nem em janelas bem largas. */
+.custom__coluna-3d {
+  flex: 5 1 380px;
+  max-width: 640px;
+}
+
+.custom__coluna-2d {
+  flex: 2 1 300px;
+  max-width: 380px;
+}
+
+.custom__visualizador-3d {
+  position: relative;
+  margin-bottom: 0.8rem;
+}
+
+/* <model-viewer> não tem altura própria — sem isso ele fica com os 150px
+   padrão do componente. 640x569 é o teto (a coluna encolhe antes disso em
+   telas menores, a proporção 9:8 se mantém). */
+.custom__model {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 9 / 8;
+  max-height: 569px;
+  background: #1b2029;
+  border: var(--borda);
+  --progress-bar-color: var(--terracota);
+}
+
+.custom__selo-3d {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+  z-index: 2;
+  background: var(--papel);
+  border: 2px solid var(--tinta);
+  font-size: 0.72rem;
+  padding: 0.2rem 0.6rem;
+  pointer-events: none;
+}
+
+.custom__3d-indisponivel {
+  margin: 0;
+  padding: 1.4rem;
+  border: var(--borda);
+  background: var(--papel-escuro);
+  font-size: 0.85rem;
+  font-style: italic;
+  text-align: center;
+}
+
+.custom__controles-3d {
+  display: flex;
+  margin-bottom: 1.4rem;
+}
+
+.custom__editor-titulo {
+  font-family: var(--fonte-corpo);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
 .custom__lados {
   display: flex;
   align-items: center;
@@ -2170,17 +2282,27 @@ img, svg {
   cursor: pointer;
 }
 
+/* Menor e um pouco mais transparente que a prévia 3D ao lado — aqui é a
+   ferramenta de ajuste fino, a prévia 3D é o resultado em destaque. */
 .custom__stage {
   background: var(--papel-escuro);
   border: var(--borda);
-  padding: 1rem;
+  padding: 0.8rem;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.custom__stage:focus-within,
+.custom__stage:hover {
+  opacity: 1;
 }
 
 .custom__stage svg {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 72vh;
+  max-width: 380px;
+  max-height: 380px;
   margin: 0 auto;
   user-select: none;
 }
@@ -2216,6 +2338,47 @@ img, svg {
   stroke: var(--terracota);
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
+  pointer-events: none;
+}
+
+/* Alças de arraste sobre a arte selecionada: cantos redimensionam, o
+   círculo de cima gira, o de baixo espelha — tudo direto na prévia, sem
+   precisar dos controles deslizantes ao lado. */
+.camisa__alca-linha {
+  stroke: var(--terracota);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+.camisa__alca {
+  fill: var(--papel);
+  stroke: var(--tinta);
+  stroke-width: 1.5;
+  pointer-events: all;
+}
+
+.camisa__alca--redimensionar {
+  cursor: nwse-resize;
+}
+
+.camisa__alca--rotacao {
+  cursor: grab;
+}
+
+.camisa__alca--rotacao:active {
+  cursor: grabbing;
+}
+
+.camisa__alca--espelhar {
+  cursor: pointer;
+}
+
+.camisa__alca-icone {
+  fill: none;
+  stroke: var(--tinta);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   pointer-events: none;
 }
 
@@ -2430,6 +2593,38 @@ img, svg {
   border-radius: 999px;
 }
 
+/* Só aparece quando duas ou mais artes dividem o mesmo lado — deixa claro
+   qual fica na frente de qual e permite reordenar. */
+.arte-item__camadas {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.arte-item__camada {
+  background: none;
+  border: 1px solid var(--tinta);
+  line-height: 1;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.6rem;
+  cursor: pointer;
+  color: var(--tinta);
+}
+
+.arte-item__camada:first-child {
+  border-bottom: none;
+}
+
+.arte-item__camada:hover:not(:disabled) {
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+.arte-item__camada:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .arte-item__remover {
   background: none;
   border: none;
@@ -2474,6 +2669,28 @@ img, svg {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin: 0.4rem 0 1rem;
+}
+
+/* Tamanho aproximado da estampa em cada posição rápida, como numa tabela
+   de referência de estamparia. */
+.preset-botao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+
+.preset-botao__cm {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--tinta);
+  background: var(--ocre);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+}
+
+.filtro[aria-pressed="true"] .preset-botao__cm {
+  background: var(--papel);
 }
 
 .arte-acoes {
@@ -2548,8 +2765,19 @@ img, svg {
   .custom__palco {
     position: static;
   }
-  .custom__stage svg {
-    max-height: 60vh;
+  .custom__painel {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+  .custom__coluna-3d,
+  .custom__coluna-2d {
+    max-width: none;
+    flex-basis: 100%;
+  }
+  .custom__visualizador-3d {
+    margin-bottom: 1.2rem;
   }
 }
 
